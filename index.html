@@ -482,7 +482,7 @@
                     <div class="dash-box">
                         <div class="dash-box-title">NAACH OPS</div>
                         <div class="event-stat-badge" id="stat-event4">0 pts</div>
-                        <div style="height: 200px;"><canvas id=\"chartEvent4\"></canvas></div>
+                        <div style="height: 200px;"><canvas id="chartEvent4"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -529,7 +529,8 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvhvJC-E5_shFSNNXJiHUAf6n-kbSS6jT8Wx90HmWYd5amzKSyd_IT2BQovJDHLuwleA/exec";
+        // Updated SCRIPT_URL with the latest version
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrnqtNipOb9ZrdV9aVPLctRfPGs5o1sKj9mGk8GzaTnoE3D5jH8-LD4aOY5l7zwGCYgg/exec";
         const DEFAULT_PASSWORD = "Dinesh@002"; 
         
         let activeSessionData = null;
@@ -620,7 +621,6 @@
             try {
                 await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
                 showNotification("Scores submitted successfully!");
-                // CHANGED: Instead of switching to dashboard, we reset the form so they can score other divisions
                 resetPolling(); 
             } catch (e) { 
                 showNotification("Network sync failed.", "error"); 
@@ -651,6 +651,7 @@
                     winner: "DIVISION C", 
                     pieScore: 35, 
                     divScores: [22, 18, 35, 10], 
+                    eventScores: [24, 18, 30, 0], // Fallback data
                     securityKey: DEFAULT_PASSWORD 
                 };
                 document.getElementById('securityModal').style.display = 'flex';
@@ -663,7 +664,7 @@
 
         function verifySecurityKey() {
             const input = document.getElementById('securityInput').value;
-            const validKey = cachedResultData.securityKey || DEFAULT_PASSWORD;
+            const validKey = (cachedResultData && cachedResultData.securityKey) || DEFAULT_PASSWORD;
             
             if (input === String(validKey)) {
                 isSessionUnlocked = true;
@@ -686,12 +687,8 @@
             const eventNames = ["CASH CRUSHER", "CLUE CARTER", "SHOW THE FLOW", "NAACH OPS"];
             const colors = ['#4da6ff', '#fbbf24', '#10b981', '#f43f5e'];
             
-            const mockEventScores = [
-                Math.floor(data.pieScore * 0.8),
-                Math.floor(data.pieScore * 0.6),
-                data.pieScore,
-                Math.floor(data.pieScore * 0.9)
-            ];
+            // Map the fetched eventScores [A2, B2, C2, D2] from Sheet 5
+            const eventScores = data.eventScores || [0, 0, 0, 0];
 
             eventNames.forEach((name, index) => {
                 const id = index + 1;
@@ -701,7 +698,7 @@
                 const ctx = canvas.getContext('2d');
                 if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
 
-                const score = mockEventScores[index];
+                const score = eventScores[index];
                 document.getElementById(`stat-event${id}`).innerText = `${score} pts`;
 
                 chartInstances[canvasId] = new Chart(ctx, {
