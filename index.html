@@ -188,7 +188,6 @@
             transition: all 0.2s ease;
             box-shadow: 0 6px 15px rgba(77, 166, 255, 0.25);
             display: inline-block;
-            text-transform: uppercase;
             letter-spacing: 1px;
             min-width: 250px;
         }
@@ -278,7 +277,7 @@
         .btn-submit {
             background: var(--sidebar-bg); color: white; padding: 20px; border: none;
             border-radius: 12px; font-weight: 800; cursor: pointer; width: 100%; font-size: 1.1rem;
-            margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;
+            margin-top: 20px; letter-spacing: 1px;
         }
 
         .btn-back {
@@ -396,21 +395,21 @@
             <div id="dashboardView" class="view-transition active">
                 <div class="header-wrapper"><h1 class="events-header">Active Events</h1></div>
                 <div class="operations-grid">
-                    <div class="card" onclick="startScoring('CASH CRUSHER')">
+                    <div class="card" onclick="startScoring('CASE CRUSHER')">
                         <div class="card-icon">C</div>
-                        <div class="card-title">CASH CRUSHER</div>
+                        <div class="card-title">Case Crusher</div>
                     </div>
                     <div class="card" onclick="startScoring('CLUE CARTER')">
                         <div class="card-icon">C</div>
-                        <div class="card-title">CLUE CARTER</div>
+                        <div class="card-title">Clue Carter</div>
                     </div>
                     <div class="card" onclick="startScoring('SHOW THE FLOW')">
                         <div class="card-icon">S</div>
-                        <div class="card-title">SHOW THE FLOW</div>
+                        <div class="card-title">Show The Flow</div>
                     </div>
                     <div class="card" onclick="startScoring('NAACH OPS')">
                         <div class="card-icon">N</div>
-                        <div class="card-title">NAACH OPS</div>
+                        <div class="card-title">Naach Ops</div>
                     </div>
                 </div>
                 <div class="btn-footer-group">
@@ -423,7 +422,7 @@
                 <button class="btn-back" onclick="switchView('dashboardView')">← Back to Dashboard</button>
                 <div class="polling-container">
                     <div id="displayJudgeBadge" class="judge-badge">Judge 1</div>
-                    <h1 id="displayEvent" class="polling-title">EVENT NAME</h1>
+                    <h1 id="displayEvent" class="polling-title">Event Name</h1>
                     <h3 class="polling-subtitle">Scoring & Feedback</h3>
                     
                     <div class="criteria-row">
@@ -465,22 +464,22 @@
                 <div class="header-wrapper"><h1 class="events-header">Event-wise Analysis</h1></div>
                 <div class="event-results-grid" id="eventResultsContent">
                     <div class="dash-box">
-                        <div class="dash-box-title">CASH CRUSHER</div>
+                        <div class="dash-box-title">Case Crusher</div>
                         <div class="event-stat-badge" id="stat-event1">0 pts</div>
                         <div style="height: 200px;"><canvas id="chartEvent1"></canvas></div>
                     </div>
                     <div class="dash-box">
-                        <div class="dash-box-title">CLUE CARTER</div>
+                        <div class="dash-box-title">Clue Carter</div>
                         <div class="event-stat-badge" id="stat-event2">0 pts</div>
                         <div style="height: 200px;"><canvas id="chartEvent2"></canvas></div>
                     </div>
                     <div class="dash-box">
-                        <div class="dash-box-title">SHOW THE FLOW</div>
+                        <div class="dash-box-title">Show The Flow</div>
                         <div class="event-stat-badge" id="stat-event3">0 pts</div>
                         <div style="height: 200px;"><canvas id="chartEvent3"></canvas></div>
                     </div>
                     <div class="dash-box">
-                        <div class="dash-box-title">NAACH OPS</div>
+                        <div class="dash-box-title">Naach Ops</div>
                         <div class="event-stat-badge" id="stat-event4">0 pts</div>
                         <div style="height: 200px;"><canvas id="chartEvent4"></canvas></div>
                     </div>
@@ -584,7 +583,8 @@
 
         function startScoring(eventName) {
             activeSessionData.currentEvent = eventName;
-            document.getElementById('displayEvent').innerText = eventName;
+            // Convert to Title Case for UI display
+            document.getElementById('displayEvent').innerText = eventName.toLowerCase().split(' ').map(s => s.charAt(0).toUpperCase() + s.substring(1)).join(' ');
             document.getElementById('displayTeacher').innerText = "Assigned Judge: " + activeSessionData.teacher;
             document.getElementById('displayJudgeBadge').innerText = "Judge " + activeSessionData.judge;
             
@@ -651,7 +651,7 @@
                     winner: "DIVISION C", 
                     pieScore: 35, 
                     divScores: [22, 18, 35, 10], 
-                    eventScores: [24, 18, 30, 0], // Fallback data
+                    eventScores: [24, 18, 30, 0], 
                     securityKey: DEFAULT_PASSWORD 
                 };
                 document.getElementById('securityModal').style.display = 'flex';
@@ -684,10 +684,9 @@
         }
 
         function renderEventDashboard(data) {
-            const eventNames = ["CASH CRUSHER", "CLUE CARTER", "SHOW THE FLOW", "NAACH OPS"];
+            const eventNames = ["Case Crusher", "Clue Carter", "Show The Flow", "Naach Ops"];
             const colors = ['#4da6ff', '#fbbf24', '#10b981', '#f43f5e'];
             
-            // Map the fetched eventScores [A2, B2, C2, D2] from Sheet 5
             const eventScores = data.eventScores || [0, 0, 0, 0];
 
             eventNames.forEach((name, index) => {
@@ -753,7 +752,7 @@
                 data: {
                     labels: divLabels,
                     datasets: [{
-                        data: data.divScores || [0,0,0,0],
+                        data: data.divScores || [0, 0, 0, 0],
                         backgroundColor: '#4da6ff',
                         borderRadius: 8
                     }]
