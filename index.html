@@ -255,14 +255,15 @@
         .criteria-row {
             display: flex; align-items: center; justify-content: space-between;
             margin-bottom: 15px; background: transparent; padding: 10px 0;
+            flex-wrap: wrap; gap: 10px;
         }
         .criteria-label { font-size: 1.1rem; font-weight: 600; color: var(--text-main); }
 
-        .rating-group { display: flex; gap: 12px; }
+        .rating-group { display: flex; gap: 8px; flex-wrap: wrap; }
         .rating-box {
-            width: 50px; height: 50px; border: 2px solid #cbd5e1; border-radius: 10px;
+            width: 44px; height: 44px; border: 2px solid #cbd5e1; border-radius: 10px;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
-            font-weight: 800; font-size: 1.1rem; color: #475569; transition: var(--transition);
+            font-weight: 800; font-size: 1rem; color: #475569; transition: var(--transition);
         }
         .rating-box.selected { background: var(--sidebar-bg); color: white; border-color: var(--sidebar-bg); transform: scale(1.1); }
 
@@ -311,6 +312,17 @@
             z-index: 1000; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); display: none;
         }
 
+        /* Modal styling for password */
+        .security-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); display: none; align-items: center;
+            justify-content: center; z-index: 2000; padding: 20px;
+        }
+        .security-modal-content {
+            background: white; padding: 30px; border-radius: 20px; width: 100%;
+            max-width: 400px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
         /* Mobile Adjustments */
         @media (max-width: 768px) {
             .app-container { flex-direction: column; }
@@ -320,8 +332,8 @@
             main { padding: 20px; }
             .polling-title { font-size: 2.5rem; }
             .criteria-row { flex-direction: column; align-items: flex-start; gap: 10px; }
-            .rating-group { width: 100%; justify-content: space-between; }
-            .rating-box { flex: 1; }
+            .rating-group { width: 100%; justify-content: flex-start; }
+            .rating-box { flex: 0 0 44px; }
             .banner-winner-flex { flex-direction: column; gap: 10px; }
             .btn-footer-group { flex-direction: column; align-items: stretch; }
             .btn-result { min-width: 0; width: 100%; }
@@ -331,6 +343,22 @@
 <body>
 
     <div id="notification"></div>
+
+    <!-- Security Key Modal -->
+    <div id="securityModal" class="security-modal">
+        <div class="security-modal-content">
+            <h2 style="margin-top: 0; font-weight: 800; color: var(--sidebar-bg);">Restricted Area</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Verification required to access management analytics.</p>
+            <input type="password" id="securityInput" 
+                   onkeyup="if(event.key==='Enter') verifySecurityKey()"
+                   style="width:100%; padding:14px; border:2px solid #cbd5e1; border-radius:12px; text-align: center; font-size: 1.2rem; letter-spacing: 4px; margin-bottom: 20px;" 
+                   placeholder="****">
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-submit" onclick="closeSecurityModal()" style="margin-top:0; background: #e2e8f0; color: var(--text-main); flex: 1;">Cancel</button>
+                <button class="btn-submit" onclick="verifySecurityKey()" style="margin-top:0; flex: 2;">Unlock Access</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Login View -->
     <div id="loginView">
@@ -406,13 +434,18 @@
                     </div>
 
                     <div class="criteria-row">
-                        <span class="criteria-label">Marks (1-5)</span>
+                        <span class="criteria-label">Marks (1-10)</span>
                         <div class="rating-group" id="crit1">
                             <div class="rating-box" onclick="setRating('crit1', 1)">1</div>
                             <div class="rating-box" onclick="setRating('crit1', 2)">2</div>
                             <div class="rating-box" onclick="setRating('crit1', 3)">3</div>
                             <div class="rating-box" onclick="setRating('crit1', 4)">4</div>
                             <div class="rating-box" onclick="setRating('crit1', 5)">5</div>
+                            <div class="rating-box" onclick="setRating('crit1', 6)">6</div>
+                            <div class="rating-box" onclick="setRating('crit1', 7)">7</div>
+                            <div class="rating-box" onclick="setRating('crit1', 8)">8</div>
+                            <div class="rating-box" onclick="setRating('crit1', 9)">9</div>
+                            <div class="rating-box" onclick="setRating('crit1', 10)">10</div>
                         </div>
                     </div>
 
@@ -449,7 +482,7 @@
                     <div class="dash-box">
                         <div class="dash-box-title">NAACH OPS</div>
                         <div class="event-stat-badge" id="stat-event4">0 pts</div>
-                        <div style="height: 200px;"><canvas id="chartEvent4"></canvas></div>
+                        <div style="height: 200px;"><canvas id=\"chartEvent4\"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -496,9 +529,13 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbznEombJT982aTUJ9ktW1iDVj9zdABZls-2n0qjLFj04xb3PYcyRKru6wl6qSTcYGhkqw/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvhvJC-E5_shFSNNXJiHUAf6n-kbSS6jT8Wx90HmWYd5amzKSyd_IT2BQovJDHLuwleA/exec";
+        const DEFAULT_PASSWORD = "Dinesh@002"; 
+        
         let activeSessionData = null;
+        let cachedResultData = null;
         let chartInstances = {};
+        let isSessionUnlocked = false;
 
         function showNotification(msg, type = 'success') {
             const toast = document.getElementById('notification');
@@ -533,6 +570,8 @@
 
         function logout() {
             activeSessionData = null;
+            cachedResultData = null;
+            isSessionUnlocked = false;
             document.getElementById('teacherName').value = '';
             document.getElementById('judgeComments').value = '';
             document.querySelectorAll('.rating-box').forEach(b => b.classList.remove('selected'));
@@ -581,7 +620,8 @@
             try {
                 await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
                 showNotification("Scores submitted successfully!");
-                switchView('dashboardView');
+                // CHANGED: Instead of switching to dashboard, we reset the form so they can score other divisions
+                resetPolling(); 
             } catch (e) { 
                 showNotification("Network sync failed.", "error"); 
             } finally { 
@@ -590,34 +630,56 @@
         }
 
         async function handleViewResults() {
-            switchView('resultsView');
+            if (isSessionUnlocked && cachedResultData) {
+                switchView('resultsView');
+                renderDashboard(cachedResultData);
+                return;
+            }
+
+            showNotification("Checking Access Permissions...", "success");
             try {
                 const res = await fetch(SCRIPT_URL + "?action=getResults");
                 const data = await res.json();
-                renderDashboard(data);
+                cachedResultData = data;
+                
+                document.getElementById('securityModal').style.display = 'flex';
+                document.getElementById('securityInput').value = '';
+                document.getElementById('securityInput').focus();
             } catch (e) {
-                showNotification("Syncing Results Portfolio...", "success");
-                renderDashboard({
-                    winner: "DIVISION C",
-                    pieScore: 35,
-                    divScores: [22, 18, 35, 10]
-                });
+                showNotification("Connection error. Using local bypass.", "error");
+                cachedResultData = { 
+                    winner: "DIVISION C", 
+                    pieScore: 35, 
+                    divScores: [22, 18, 35, 10], 
+                    securityKey: DEFAULT_PASSWORD 
+                };
+                document.getElementById('securityModal').style.display = 'flex';
+            }
+        }
+
+        function closeSecurityModal() {
+            document.getElementById('securityModal').style.display = 'none';
+        }
+
+        function verifySecurityKey() {
+            const input = document.getElementById('securityInput').value;
+            const validKey = cachedResultData.securityKey || DEFAULT_PASSWORD;
+            
+            if (input === String(validKey)) {
+                isSessionUnlocked = true;
+                closeSecurityModal();
+                switchView('resultsView');
+                renderDashboard(cachedResultData);
+            } else {
+                showNotification("Incorrect Security Key!", "error");
+                document.getElementById('securityInput').value = '';
+                document.getElementById('securityInput').focus();
             }
         }
 
         async function handleViewEventResults() {
             switchView('eventwiseView');
-            try {
-                const res = await fetch(SCRIPT_URL + "?action=getResults");
-                const data = await res.json();
-                renderEventDashboard(data);
-            } catch (e) {
-                showNotification("Syncing Event-wise Data...", "success");
-                renderEventDashboard({
-                    divScores: [22, 18, 35, 10],
-                    pieScore: 35
-                });
-            }
+            renderEventDashboard(cachedResultData);
         }
 
         function renderEventDashboard(data) {
@@ -634,7 +696,9 @@
             eventNames.forEach((name, index) => {
                 const id = index + 1;
                 const canvasId = `chartEvent${id}`;
-                const ctx = document.getElementById(canvasId).getContext('2d');
+                const canvas = document.getElementById(canvasId);
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
                 if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
 
                 const score = mockEventScores[index];
@@ -643,7 +707,7 @@
                 chartInstances[canvasId] = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Achieved', 'Remaining to 40'],
+                        labels: ['Achieved', 'Remaining'],
                         datasets: [{
                             data: [score, Math.max(0, 40 - score)],
                             backgroundColor: [colors[index], '#f1f5f9'],
@@ -664,7 +728,7 @@
             const table = document.getElementById('divisionTable');
             table.innerHTML = '';
             divLabels.forEach((name, index) => {
-                const val = data.divScores[index] || 0;
+                const val = (data.divScores && data.divScores[index]) || 0;
                 table.innerHTML += `<tr><td>${name}</td><td class="score-val">${val} pts</td></tr>`;
             });
 
@@ -692,7 +756,7 @@
                 data: {
                     labels: divLabels,
                     datasets: [{
-                        data: data.divScores,
+                        data: data.divScores || [0,0,0,0],
                         backgroundColor: '#4da6ff',
                         borderRadius: 8
                     }]
